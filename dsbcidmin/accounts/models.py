@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User # new
+from django.contrib.auth.models import User
+
+from dsbcidmin.custom import ChoiseClass # new
 # from client.model import models
 # Create your models here.
 
@@ -7,8 +9,12 @@ class LedgerCategory(models.Model):
 	name = models.CharField(max_length=200)
 	code = models.CharField(max_length=10)
 	no_of_group = models.IntegerField(default=0)
-	dr = models.CharField(max_length=10)
-	cr = models.CharField(max_length=10)
+	dr = models.CharField(choices=ChoiseClass.CRDR_CHOISE,max_length=10,default='decrease')
+	cr = models.CharField(choices=ChoiseClass.CRDR_CHOISE,max_length=10,default='increase')
+	
+
+	def __str__(self):
+		return "%s-%s" % (self.code,self.name)
 
 class LedgerTypes(models.Model):
 	ledger_type_title = models.CharField(max_length=200)
@@ -16,13 +22,16 @@ class LedgerTypes(models.Model):
 	final_account_section = models.CharField(max_length=3,default=None,blank=True, null=True,choices=(('tb','Trial Balance'),('pl','Profite & Loss'),('bs','Balance Sheet'),('mf','Manufacturing')))
 	side = models.CharField(max_length=6,default=None,blank=True, null=True,choices=(('cr','Credit'),('dr','Debit'),('as','Asset'),('lb','Liability')))
 	ordering = models.IntegerField(default=0)
-	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="ledger_type")
+	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lt_ledger_category")
+	
+	def __str__(self):
+		return "%s(%s/%s/%s)" % (self.ledger_type_title,self.ledger_type_code,self.final_account_section,self.side)
 
 class LedgerGroup(models.Model):
 	ledger_group_name = models.CharField(max_length=200)
-	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT)
-	ledger_type = models.ForeignKey("LedgerTypes",on_delete=models.PROTECT)
-	parent_group = models.ForeignKey("LedgerGroup",on_delete=models.PROTECT)
+	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lg_ledger_category")
+	ledger_type = models.ForeignKey("LedgerTypes",on_delete=models.PROTECT,related_name="lg_ledger_type")
+	parent_group = models.ForeignKey("LedgerGroup",on_delete=models.PROTECT,related_name="lg_parent_ledger_group")
 	ledger_group_code = models.CharField(max_length=10)
 	no_of_subgroup = models.IntegerField(default=0)
 	no_of_ledger = models.IntegerField(default=0)
@@ -43,7 +52,7 @@ class Ledger(models.Model):
 	ledger_address = models.TextField()
 	opening_balance = models.FloatField()
 	ledger_balance = models.FloatField()
-	status = models.CharField(choices=(('active','active'),('inactive','inactive'),('deleted','deleted')),default='active',max_length=10)
+	status = models.CharField(choices=ChoiseClass.STATUS_CHOISE,default='active',max_length=10)
 	created_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_created_by')
 	created_at = models.DateTimeField('date published')
 	updated_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_updated_by',default=None,blank=True, null=True)
@@ -65,7 +74,7 @@ class Journals(models.Model):
 	user = models.ForeignKey(User,on_delete=models.PROTECT,related_name='journals_user_id')
 	post_datetime = models.DateTimeField(auto_now=False)
 	total_amount = models.FloatField();
-	status = models.CharField(choices=(('active','active'),('inactive','inactive'),('deleted','deleted')),default='active',max_length=10)
+	status = models.CharField(choices=ChoiseClass.STATUS_CHOISE,default='active',max_length=10)
 	created_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='journals_created_by')
 	created_at = models.DateTimeField('date published')
 	updated_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='journals_updated_by',default=None,blank=True, null=True)
@@ -93,7 +102,7 @@ class LedgerTransactionHistory(models.Model):
 	ledger_after_balance = models.FloatField()
 	transaction_no = models.CharField(max_length=100)
 	note = models.CharField(max_length=500)
-	status = models.CharField(choices=(('active','active'),('inactive','inactive'),('deleted','deleted')),default='active',max_length=10)
+	status = models.CharField(choices=ChoiseClass.STATUS_CHOISE,default='active',max_length=10)
 	created_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_transaction_history_created_by')
 	created_at = models.DateTimeField('date published')
 	updated_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_transaction_history_updated_by',default=None,blank=True, null=True)

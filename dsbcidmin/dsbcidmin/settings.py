@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-c$9sdre(0)sg^$b3rtv=q1o#ralw+#07lj-zn!9%^)kpw-vmso
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -42,19 +41,40 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'case_module.apps.CaseModuleConfig',
     'organization_module.apps.OrganizationModuleConfig',
+    'rest_framework.authtoken',
+    "corsheaders",
+    'user_module.apps.UserModuleConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'dsbcidmin.urls'
+
+ALLOWED_HOSTS = ["*"]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+]
 
 TEMPLATES = [
     {
@@ -80,11 +100,14 @@ WSGI_APPLICATION = 'dsbcidmin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dsbcindia',
+        'NAME': 'dsbc_india_v2',
         'USER':'root',
         'PASSWORD':'',
         'HOST':'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            "init_command": "SET storage_engine=INNODB",
+        } 
     }
 }
 
@@ -134,7 +157,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
+    # 'rest_framework.permissions.isAuthenticated',
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.TokenAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+
     ]
 }
