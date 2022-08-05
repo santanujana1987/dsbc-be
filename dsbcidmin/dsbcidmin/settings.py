@@ -37,13 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+     'rest_framework.authtoken',
+    'rest_framework_swagger',
+    "corsheaders",
+    'user_module.apps.UserModuleConfig',
     'service_module.apps.ServiceModuleConfig',
     'accounts.apps.AccountsConfig',
     'case_module.apps.CaseModuleConfig',
-    'organization_module.apps.OrganizationModuleConfig',
-    'rest_framework.authtoken',
-    "corsheaders",
-    'user_module.apps.UserModuleConfig',
+    'organization_module.apps.OrganizationModuleConfig',    
 ]
 
 MIDDLEWARE = [
@@ -166,4 +167,13 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
 
     ]
+}
+
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': 'rest_framework:login',
+    'LOGOUT_URL': 'rest_framework:logout',
+    'USE_SESSION_AUTH': True,
+    'DOC_EXPANSION': 'list',
+    'APIS_SORTER': 'alpha',
+    'SECURITY_DEFINITIONS': None,
 }

@@ -16,31 +16,37 @@ class LedgerCategory(models.Model):
 	def __str__(self):
 		return "%s-%s" % (self.code,self.name)
 
+	def __unicode__(self):
+		return self.name
+
 class LedgerTypes(models.Model):
 	ledger_type_title = models.CharField(max_length=200)
 	ledger_type_code = models.CharField(max_length=6)
-	final_account_section = models.CharField(max_length=3,default=None,blank=True, null=True,choices=(('tb','Trial Balance'),('pl','Profite & Loss'),('bs','Balance Sheet'),('mf','Manufacturing')))
-	side = models.CharField(max_length=6,default=None,blank=True, null=True,choices=(('cr','Credit'),('dr','Debit'),('as','Asset'),('lb','Liability')))
+	final_account_section = models.CharField(max_length=50,default=None,blank=True, null=True,choices=ChoiseClass.FINAL_ACCOUNT_SECTION_CHOISE)
+	side = models.CharField(max_length=50,default=None,blank=True, null=True,choices=ChoiseClass.ACCOUNT_REPORT_SIDE_CHOISE)
 	ordering = models.IntegerField(default=0)
-	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lt_ledger_category")
+	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lc_Ledger_types")
 	
 	def __str__(self):
 		return "%s(%s/%s/%s)" % (self.ledger_type_title,self.ledger_type_code,self.final_account_section,self.side)
 
 class LedgerGroup(models.Model):
 	ledger_group_name = models.CharField(max_length=200)
-	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lg_ledger_category")
-	ledger_type = models.ForeignKey("LedgerTypes",on_delete=models.PROTECT,related_name="lg_ledger_type")
+	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT,related_name="lc_ledger_group")
+	ledger_type = models.ForeignKey("LedgerTypes",on_delete=models.PROTECT,related_name="lt_ledger_group")
 	parent_group = models.ForeignKey("LedgerGroup",on_delete=models.PROTECT,related_name="lg_parent_ledger_group")
 	ledger_group_code = models.CharField(max_length=10)
 	no_of_subgroup = models.IntegerField(default=0)
 	no_of_ledger = models.IntegerField(default=0)
 	nesting_level = models.IntegerField(default=None,blank=True, null=True)
 	editable = models.DateTimeField(auto_now=True)
-	created_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_group_created_by')
+	created_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='creator_ledger_group')
 	created_at = models.DateTimeField('date published')
-	updated_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='ledger_group_updated_by',default=None,blank=True, null=True)
+	updated_by = models.ForeignKey(User,on_delete=models.PROTECT,related_name='updater_ledger_group',default=None,blank=True, null=True)
 	updated_at = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return "%s-%s" % (self.ledger_group_code,self.ledger_group_name)
 	
 class Ledger(models.Model):
 	ledger_category = models.ForeignKey("LedgerCategory",on_delete=models.PROTECT)
